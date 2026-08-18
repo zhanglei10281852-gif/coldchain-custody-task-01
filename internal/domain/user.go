@@ -73,13 +73,7 @@ type Principal struct {
 }
 
 func (s Session) IsActive(now time.Time) bool {
-	if s.UserID == "" || s.ExpiresAt.IsZero() {
-		return false
-	}
-	if !s.ExpiresAt.After(now) {
-		return false
-	}
-	return true
+	return s.RevokedAt == nil && s.ExpiresAt.After(now)
 }
 
 func (p Principal) Can(roles ...Role) bool {

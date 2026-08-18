@@ -110,11 +110,8 @@ func (s *AuthService) Authenticate(ctx context.Context, token string) (domain.Pr
 	if err != nil {
 		return domain.Principal{}, fmt.Errorf("authenticate session: %w", err)
 	}
-	if !session.IsActive(s.clock.Now()) {
+	if session.RevokedAt != nil || !session.ExpiresAt.After(s.clock.Now()) || user.Status != domain.UserActive {
 		return domain.Principal{}, fmt.Errorf("session is no longer active: %w", domain.ErrConflict)
-	}
-	if user.Status != domain.UserActive {
-		return domain.Principal{}, fmt.Errorf("user is no longer active: %w", domain.ErrConflict)
 	}
 	return domain.Principal{UserID: user.ID, Email: user.Email, DisplayName: user.DisplayName, Role: user.Role, SessionID: session.ID}, nil
 }
